@@ -4,17 +4,23 @@ open Window
 open Minotaur.GUI.Fragment
 open Colors
 open Minotaur.Utilities.Misc
+open Minotaur.GUI.Rect
+open Minotaur.GUI.TextBox
+
+let mainWindow = window 30
+
+let menu1TextBoxFunc = textBox Center TopCenter Middle mainWindow.rect white black
+let menu1Item1 = menu1TextBoxFunc 0 5 "┌────────────┐\n\
+                                       │  Settings  │\n\
+                                       └────────────┘"
+let menu1Item2 = menu1TextBoxFunc 0 10 "┌────────────┐\n\
+                                        │    Exit    │\n\
+                                        └────────────┘"
 
 [<EntryPoint>]
 let main args =
-    let w = window 30
+    addFragment mainWindow menu1Item1
+    addFragment mainWindow menu1Item2
 
-    let content = List<List<char>> ()
-    for i = 0 to 10 do
-        List<char> () |> content.Add 
-        String.replicate 30 "X" |> charList  |> content.[i].AddRange 
-    let f = centeredFragment w.rect white black 0 0 content
-    addFragment w f
-
-    mainLoop w
+    mainLoop mainWindow
     0

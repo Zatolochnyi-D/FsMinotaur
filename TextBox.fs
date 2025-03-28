@@ -18,7 +18,7 @@ let alignCenter targetLength (string: string) =
     let rightEmpty = String.replicate (emptyLength / 2) " "
     leftEmpty + string + rightEmpty
 
-let textBox pivot anchor alignment parent x y (text: string) foregroundColor backgroundColor =
+let textBox pivot anchor alignment parent foregroundColor backgroundColor x y (text: string) =
     let lines = text.Split '\n'
     let biggestLength = lines.Max (fun x -> x.Length)
     let fragmentContent = List<List<char>> ()
