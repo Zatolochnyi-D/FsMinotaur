@@ -14,5 +14,4 @@ let fragment pivot anchor parent foregroundColor backgroundColor x y (content: L
     let rect = rect pivot anchor (Parent parent) x y content.[0].Count content.Count
     { rect = rect; chars = content; foregroundColor = foregroundColor; backgroundColor = backgroundColor }
 
-let centeredFragment: Rect -> Color -> Color -> int -> int -> List<List<char>> -> Fragment =
-    fragment Center Center
+let setFragmentForeground fragment color = { fragment with foregroundColor = color }

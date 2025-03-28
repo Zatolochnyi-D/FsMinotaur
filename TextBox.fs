@@ -1,7 +1,6 @@
 module Minotaur.GUI.TextBox
 open System.Collections.Generic
 open System.Linq
-open Minotaur.GUI.Rect
 open Minotaur.GUI.Fragment
 open Minotaur.Utilities.Misc
 
