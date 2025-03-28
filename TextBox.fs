@@ -6,11 +6,6 @@ open Minotaur.GUI.Fragment
 open Minotaur.Utilities.Misc
 
 type TextAlignment = Left | Middle
-type TextBox = {
-    text: string
-    alignment: TextAlignment
-    fragment: Fragment
-}
 
 let alignLeft targetLength (string: string) =
     let emptyLength = targetLength - string.Length
