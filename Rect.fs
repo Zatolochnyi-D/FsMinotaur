@@ -4,7 +4,7 @@ open Minotaur.Utilities.Misc
 
 type Anchor = TopLeft | TopCenter | Center
 type Rect = {
-    absloutePosition: Vector
+    absolutePosition: Vector
     localPosition: Vector
     dimensions: Vector
     pivot: Anchor
@@ -30,15 +30,15 @@ let absolutePosition parent pivot anchor localPosition dimensions =
     match parent with 
         | Parent p -> let pivotShift = rectPivotShift pivot dimensions
                       let anchorShift = rectAnchorShift p anchor
-                      localPosition + pivotShift + anchorShift + p.absloutePosition
+                      localPosition + pivotShift + anchorShift + p.absolutePosition
         | None _   -> localPosition
     
 let rect pivot anchor parent x y width height =
     let dimensions = vector width height
     let localPosition = vector x y
     let absolutePosition = absolutePosition parent pivot anchor localPosition dimensions
-    { absloutePosition = absolutePosition; localPosition = localPosition; dimensions = dimensions; pivot = pivot; anchor = anchor }
+    { absolutePosition = absolutePosition; localPosition = localPosition; dimensions = dimensions; pivot = pivot; anchor = anchor }
 
 let rectWithNewParent parent rect =
     let absolutePosition = absolutePosition parent rect.pivot rect.anchor rect.localPosition rect.dimensions
-    { rect with absloutePosition = absolutePosition }
+    { rect with absolutePosition = absolutePosition }

@@ -78,7 +78,7 @@ let addFragment window fragment =
 let writeBuffer window =
     for fragment in window.fragments do
         let fDim = fragment.rect.dimensions
-        let fPos = fragment.rect.absloutePosition
+        let fPos = fragment.rect.absolutePosition
         for y = 0 to fDim.y - 1 do
             for x = 0 to fDim.x - 1 do
                 let X = fPos.x + x
