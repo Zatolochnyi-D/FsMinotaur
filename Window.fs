@@ -1,4 +1,4 @@
-module Minotaur.Window
+module Minotaur.Window.Window
 open System.Collections.Generic
 open System.Threading
 open Minotaur.Colors
@@ -6,14 +6,21 @@ open Minotaur.Console
 open Minotaur.GUI.Rect
 open Minotaur.Utilities.Misc
 open Minotaur.GUI.Fragment
+open Minotaur.Window.Binding
+open System
 
+exception NullValue of string
+
+type NullableFragment = Value of Fragment | Null of unit
 type Window = {
     rect: Rect
     sleepTime: int
+    keyReader: unit -> ConsoleKey
     charBuffer: List<List<char>>
     foregroundColorBuffer: List<List<Color>>
     backgroundColorBuffer: List<List<Color>>
-    fragments: List<Fragment>
+    fragments: List<NullableFragment>
+    bindings: List<Binding>
 }
 let defaultForeground = white
 let defaultBackground = black
@@ -43,10 +50,12 @@ let window fps =
     {
         rect = rect TopLeft TopLeft (None ()) 0 0 width height
         sleepTime = fps |> double |> (/) 1000.0 |> floorToInt
+        keyReader = keyReader ()
         charBuffer = chars
         foregroundColorBuffer = foregrounds
         backgroundColorBuffer = backgrounds
-        fragments = List<Fragment> ()
+        fragments = List<NullableFragment> ()
+        bindings = List<Binding> ()
     }
 
 let resize window = 
@@ -56,7 +65,10 @@ let resize window =
     let newWindow = { window with rect = rect; charBuffer = chars; foregroundColorBuffer = foregrounds; backgroundColorBuffer = backgrounds }
     for i = 0 to newWindow.fragments.Count - 1 do
         let f = newWindow.fragments.[i]
-        newWindow.fragments.[i] <- { f with rect = rectWithNewParent (Parent newWindow.rect) f.rect }
+        match f with
+            | Value f -> newWindow.fragments.[i] <- Value { f with rect = rectWithNewParent (Parent newWindow.rect) f.rect }
+            | Null _ -> ()
+        
     newWindow
 
 let scaleToConsole window =
@@ -73,10 +85,27 @@ let clearBuffers window =
             window.backgroundColorBuffer.[y].[x] <- defaultBackground
 
 let addFragment window fragment =
-    window.fragments.Add fragment
+    let rec emptySlotSearch i fragmentToAdd =
+        if i <> window.fragments.Count then
+            match window.fragments.[i] with
+            | Value _ -> emptySlotSearch (i + 1) fragmentToAdd
+            | Null _ -> window.fragments.[i] <- fragmentToAdd; i
+        else
+            window.fragments.Add fragmentToAdd
+            i
+    emptySlotSearch 0 (Value fragment)
 
+let getFragment window index =
+    match window.fragments.[index] with
+        | Value f -> f
+        | Null _ -> raise (NullValue "Trying read null value")
+let setFragment window index fragment = window.fragments.[index] <- Value fragment
+
+let addBinding window binding =
+    window.bindings.Add binding
+     
 let writeBuffer window =
-    for fragment in window.fragments do
+    let writeFragmentToBuffer (fragment: Fragment) =
         let fDim = fragment.rect.dimensions
         let fPos = fragment.rect.absolutePosition
         for y = 0 to fDim.y - 1 do
@@ -87,6 +116,10 @@ let writeBuffer window =
                     window.charBuffer.[Y].[X] <- fragment.chars.[y].[x]
                     window.foregroundColorBuffer.[Y].[X] <- fragment.foregroundColor
                     window.backgroundColorBuffer.[Y].[X] <- fragment.backgroundColor
+    for fragment in window.fragments do
+        match fragment with
+            | Value f -> writeFragmentToBuffer f
+            | Null _ -> ()     
 
 let drawBuffer window =
     for y = 0 to window.rect.dimensions.y - 1 do
@@ -99,6 +132,14 @@ let rec mainLoop window : unit =
 
     let windowScaled, newWindow = scaleToConsole window
     if not <| windowScaled then clearBuffers window
+
+    let key = newWindow.keyReader ()
+    // printfn $"{key}"
+    // printfn $"{key.GetType()}"
+    for bind in newWindow.bindings do
+        if bind.key = key then
+            // printfn "FIREFIREFIREFIRE"
+            bind.func ()
 
     writeBuffer newWindow
     drawBuffer newWindow
