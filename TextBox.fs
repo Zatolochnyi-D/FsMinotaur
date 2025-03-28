@@ -29,6 +29,3 @@ let textBox pivot anchor alignment parent foregroundColor backgroundColor x y (t
     for line in lines do
         alignFunc biggestLength <| line |> charList |> fragmentContent.Add
     fragment pivot anchor parent foregroundColor backgroundColor x y fragmentContent
-
-let horizontallyCenteredTextBox = textBox TopCenter TopCenter Middle
-let centeredTextBox = textBox Center Center Middle
