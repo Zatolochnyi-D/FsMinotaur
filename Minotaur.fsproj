@@ -5,7 +5,7 @@
     <TargetFramework>net9.0</TargetFramework>
   </PropertyGroup>
 
-  <ItemGroup><Compile Include="Color.fs" /><Compile Include="Vector.fs" /><Compile Include="Utils.fs" /><Compile Include="Console.fs" /><Compile Include="Rect.fs" /><Compile Include="Fragment.fs" /><Compile Include="Window.fs" />
+  <ItemGroup><Compile Include="Color.fs" /><Compile Include="Vector.fs" /><Compile Include="Utils.fs" /><Compile Include="Console.fs" /><Compile Include="Rect.fs" /><Compile Include="Fragment.fs" /><Compile Include="TextBox.fs" /><Compile Include="Window.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
