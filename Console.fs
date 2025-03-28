@@ -2,7 +2,7 @@ module Minotaur.Console
 open System
 
 let defaultBackgroundColor = ConsoleColor.Black
-let defaultForegroundColor = ConsoleColor.Black
+let defaultForegroundColor = ConsoleColor.White
 
 let prepareConsole () =
     Console.CursorVisible <- false
