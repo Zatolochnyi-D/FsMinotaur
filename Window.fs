@@ -134,15 +134,12 @@ let rec mainLoop window : unit =
     if not <| windowScaled then clearBuffers window
 
     let key = newWindow.keyReader ()
-    // printfn $"{key}"
-    // printfn $"{key.GetType()}"
     for bind in newWindow.bindings do
         if bind.key = key then
-            // printfn "FIREFIREFIREFIRE"
             bind.func ()
 
     writeBuffer newWindow
     drawBuffer newWindow
 
     Thread.Sleep newWindow.sleepTime
-    mainLoop newWindow    
+    mainLoop newWindow

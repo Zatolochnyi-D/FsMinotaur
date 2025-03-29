@@ -42,7 +42,8 @@ let switch direction =
     setFragment mainWindow nextIndex (setFragmentForeground (getFragment mainWindow nextIndex) selectionColor)
 
 addBinding mainWindow (binding ConsoleKey.S (fun () -> switch 1)) |> ignore
-addBinding mainWindow (binding ConsoleKey.W (fun () -> switch -1))  |> ignore
+addBinding mainWindow (binding ConsoleKey.W (fun () -> switch -1)) |> ignore
+addBinding mainWindow (binding ConsoleKey.Escape (fun () -> Environment.Exit 0)) |> ignore
 
 [<EntryPoint>]
 let main args =
