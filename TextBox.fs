@@ -5,6 +5,11 @@ open Minotaur.GUI.Fragment
 open Minotaur.Utilities.Misc
 
 type TextAlignment = Left | Middle
+type TextBox = {
+    text: string
+    alignment: TextAlignment
+    fragment: Fragment
+}
 
 let alignLeft targetLength (string: string) =
     let emptyLength = targetLength - string.Length
@@ -27,4 +32,7 @@ let textBox pivot anchor alignment parent foregroundColor backgroundColor x y (t
         | Middle -> alignCenter
     for line in lines do
         alignFunc biggestLength <| line |> charList |> fragmentContent.Add
-    fragment pivot anchor parent foregroundColor backgroundColor x y fragmentContent
+    let fragment = fragment pivot anchor parent foregroundColor backgroundColor x y fragmentContent
+    { text = text; alignment = alignment; fragment = fragment }
+
+let setTextForeground textBox color = { textBox with fragment = setFragmentForeground textBox.fragment color }

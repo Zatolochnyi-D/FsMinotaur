@@ -17,16 +17,16 @@ let menu1Item1 =
     let item = menu1TextBoxFunc 0 5 "┌────────────┐\n\
                                      │  Settings  │\n\
                                      └────────────┘"
-    setFragmentForeground item selectionColor
-let menu1Item1Id = addFragment mainWindow menu1Item1
+    setTextForeground item selectionColor
+let menu1Item1Id = addFragment mainWindow menu1Item1.fragment
 let menu1Item2 = menu1TextBoxFunc 0 10 "┌────────────┐\n\
                                         │    Exit    │\n\
                                         └────────────┘"
-let menu1Item2Id = addFragment mainWindow menu1Item2
+let menu1Item2Id = addFragment mainWindow menu1Item2.fragment
 
 let itemCounter firstSelection =
     let minSelection, maxSelection = 0, 1
-    let mutable currentSelection = 0
+    let mutable currentSelection = firstSelection
     fun shift -> 
         currentSelection <- currentSelection + shift
         currentSelection <- min currentSelection maxSelection
@@ -46,6 +46,5 @@ addBinding mainWindow (binding ConsoleKey.W (fun () -> switch -1))  |> ignore
 
 [<EntryPoint>]
 let main args =
-
     mainLoop mainWindow
     0
