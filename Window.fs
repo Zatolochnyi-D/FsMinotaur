@@ -85,15 +85,15 @@ let clearBuffers window =
             window.backgroundColorBuffer.[y].[x] <- defaultBackground
 
 let addFragment window fragment =
-    let rec emptySlotSearch i fragmentToAdd =
+    let rec findEmptySlot i fragmentToAdd =
         if i <> window.fragments.Count then
             match window.fragments.[i] with
-            | Value _ -> emptySlotSearch (i + 1) fragmentToAdd
+            | Value _ -> findEmptySlot (i + 1) fragmentToAdd
             | Null _ -> window.fragments.[i] <- fragmentToAdd; i
         else
             window.fragments.Add fragmentToAdd
             i
-    emptySlotSearch 0 (Value fragment)
+    findEmptySlot 0 (Value fragment)
 
 let getFragment window index =
     match window.fragments.[index] with
