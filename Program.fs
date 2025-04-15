@@ -5,7 +5,7 @@ open Colors
 open Minotaur.GUI.Rect
 open Minotaur.GUI.TextBox
 open Minotaur.Window.Window
-open Minotaur.Window.Binding
+open Minotaur.Window.Bindings
 open Minotaur.Utilities.Vector
 
 let defaultColor = white

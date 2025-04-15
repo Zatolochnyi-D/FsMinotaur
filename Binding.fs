@@ -1,4 +1,4 @@
-module Minotaur.Window.Binding
+module Minotaur.Window.Bindings
 open System
 
 type Binding = {

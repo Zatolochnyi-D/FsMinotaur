@@ -1,13 +1,14 @@
 module Minotaur.Window.Window
+open System
 open System.Collections.Generic
 open System.Threading
-open Minotaur.Colors
-open Minotaur.Console
-open Minotaur.GUI.Rect
-open Minotaur.Utilities.Misc
-open Minotaur.GUI.Fragment
-open Minotaur.Window.Binding
-open System
+open Minotaur
+open Colors
+open Console
+open GUI.Rect
+open Utilities.Misc
+open GUI.Fragment
+open Window.Bindings
 
 // Changes:
 // Replaced NullableFragment with Option.
