@@ -1,6 +1,5 @@
 module Minotaur.Window.Window
 open System
-open System.Collections.Generic
 open System.Threading
 open Minotaur
 open Colors
@@ -23,8 +22,8 @@ type Window = {
     charBuffer: char array2d
     foregroundColorBuffer: Color array2d
     backgroundColorBuffer: Color array2d
-    fragments: List<Fragment option>
-    bindings: List<Binding>
+    fragments: Fragment option ResizeArray
+    bindings: Binding ResizeArray
 }
 let defaultForeground = white
 let defaultBackground = black
@@ -37,7 +36,6 @@ let createEmptyBuffers dimensions =
     chars, foregrounds, backgrounds
 
 let window fps =
-    Console.prepareConsole ()
     let consoleDimensions = Console.consoleSize ()
     let chars, foregrounds, backgrounds = createEmptyBuffers consoleDimensions
     {
@@ -47,8 +45,8 @@ let window fps =
         charBuffer = chars
         foregroundColorBuffer = foregrounds
         backgroundColorBuffer = backgrounds
-        fragments = List<Fragment option> ()
-        bindings = List<Binding> ()
+        fragments = ResizeArray<Fragment option> ()
+        bindings = ResizeArray<Binding> ()
     }
 
 let resize window = 
