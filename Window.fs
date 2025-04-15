@@ -9,9 +9,11 @@ open Minotaur.GUI.Fragment
 open Minotaur.Window.Binding
 open System
 
+// Changes:
+// Replaced NullableFragment with Option.
+
 exception NullValue of string
 
-type NullableFragment = Value of Fragment | Null of unit
 type Window = {
     rect: Rect
     sleepTime: int
@@ -19,14 +21,14 @@ type Window = {
     charBuffer: List<List<char>>
     foregroundColorBuffer: List<List<Color>>
     backgroundColorBuffer: List<List<Color>>
-    fragments: List<NullableFragment>
+    fragments: List<Fragment option>
     bindings: List<Binding>
 }
 let defaultForeground = white
 let defaultBackground = black
 
 let createEmptyBuffers width height = 
-    let chars = List<List<char>> ()
+    let chars = List<List<char>>()
     for y = 0 to height - 1 do
         List<char> () |> chars.Add
         for _ = 0 to width - 1 do
@@ -54,7 +56,7 @@ let window fps =
         charBuffer = chars
         foregroundColorBuffer = foregrounds
         backgroundColorBuffer = backgrounds
-        fragments = List<NullableFragment> ()
+        fragments = List<Fragment option> ()
         bindings = List<Binding> ()
     }
 
@@ -64,11 +66,7 @@ let resize window =
     let chars, foregrounds, backgrounds = createEmptyBuffers width height
     let newWindow = { window with rect = rect; charBuffer = chars; foregroundColorBuffer = foregrounds; backgroundColorBuffer = backgrounds }
     for i = 0 to newWindow.fragments.Count - 1 do
-        let f = newWindow.fragments.[i]
-        match f with
-            | Value f -> newWindow.fragments.[i] <- Value { f with rect = rectWithNewParent (Parent newWindow.rect) f.rect }
-            | Null _ -> ()
-        
+        newWindow.fragments.[i] <- Option.map (fun f -> { f with rect = rectWithNewParent (Parent newWindow.rect) f.rect }) newWindow.fragments.[i]
     newWindow
 
 let scaleToConsole window =
@@ -88,18 +86,18 @@ let addFragment window fragment =
     let rec findEmptySlot i fragmentToAdd =
         if i <> window.fragments.Count then
             match window.fragments.[i] with
-            | Value _ -> findEmptySlot (i + 1) fragmentToAdd
-            | Null _ -> window.fragments.[i] <- fragmentToAdd; i
+            | Some _ -> findEmptySlot (i + 1) fragmentToAdd
+            | Option.None -> window.fragments.[i] <- fragmentToAdd; i
         else
             window.fragments.Add fragmentToAdd
             i
-    findEmptySlot 0 (Value fragment)
+    findEmptySlot 0 (Some fragment)
 
 let getFragment window index =
     match window.fragments.[index] with
-        | Value f -> f
-        | Null _ -> raise (NullValue "Trying read null value")
-let setFragment window index fragment = window.fragments.[index] <- Value fragment
+        | Some f -> f
+        | Option.None -> raise (NullValue "Trying read null value")
+let setFragment window index fragment = window.fragments.[index] <- Some fragment
 
 let addBinding window binding =
     window.bindings.Add binding
@@ -118,8 +116,8 @@ let writeBuffer window =
                     window.backgroundColorBuffer.[Y].[X] <- fragment.backgroundColor
     for fragment in window.fragments do
         match fragment with
-            | Value f -> writeFragmentToBuffer f
-            | Null _ -> ()     
+            | Some f -> writeFragmentToBuffer f
+            | Option.None -> ()     
 
 let drawBuffer window =
     for y = 0 to window.rect.dimensions.y - 1 do
