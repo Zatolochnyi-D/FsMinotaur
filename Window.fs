@@ -4,14 +4,15 @@ open System.Collections.Generic
 open System.Threading
 open Minotaur
 open Colors
-open Console
 open GUI.Rect
 open Utilities.Misc
 open GUI.Fragment
 open Window.Bindings
+open Utilities.Vector
 
 // Changes:
 // Replaced NullableFragment with Option.
+// Replaced list buffers with 2d arrays.
 
 exception NullValue of string
 
@@ -19,41 +20,30 @@ type Window = {
     rect: Rect
     sleepTime: int
     keyReader: unit -> ConsoleKey
-    charBuffer: List<List<char>>
-    foregroundColorBuffer: List<List<Color>>
-    backgroundColorBuffer: List<List<Color>>
+    charBuffer: char array2d
+    foregroundColorBuffer: Color array2d
+    backgroundColorBuffer: Color array2d
     fragments: List<Fragment option>
     bindings: List<Binding>
 }
 let defaultForeground = white
 let defaultBackground = black
 
-let createEmptyBuffers width height = 
-    let chars = List<List<char>>()
-    for y = 0 to height - 1 do
-        List<char> () |> chars.Add
-        for _ = 0 to width - 1 do
-            chars.[y].Add ' '
-    let foregrounds = List<List<Color>> ()
-    for y = 0 to height - 1 do
-        List<Color> () |> foregrounds.Add
-        for _ = 0 to width - 1 do
-            foregrounds.[y].Add defaultForeground
-    let backgrounds = List<List<Color>> ()
-    for y = 0 to height - 1 do
-        List<Color> () |> backgrounds.Add
-        for _ = 0 to width - 1 do
-            backgrounds.[y].Add defaultBackground
+let createEmptyBuffers dimensions =
+    let x, y = dimensions.x, dimensions.y
+    let chars = Array2D.create x y ' '
+    let foregrounds = Array2D.create x y defaultForeground
+    let backgrounds = Array2D.create x y defaultBackground
     chars, foregrounds, backgrounds
 
 let window fps =
-    prepareConsole ()
-    let consoleDimensions = consoleSize ()
-    let chars, foregrounds, backgrounds = createEmptyBuffers consoleDimensions.x consoleDimensions.y
+    Console.prepareConsole ()
+    let consoleDimensions = Console.consoleSize ()
+    let chars, foregrounds, backgrounds = createEmptyBuffers consoleDimensions
     {
         rect = rect TopLeft TopLeft (None ()) 0 0 consoleDimensions
         sleepTime = fps |> double |> (/) 1000.0 |> floorToInt
-        keyReader = keyReader ()
+        keyReader = Console.keyReader ()
         charBuffer = chars
         foregroundColorBuffer = foregrounds
         backgroundColorBuffer = backgrounds
@@ -62,16 +52,16 @@ let window fps =
     }
 
 let resize window = 
-    let consoleDimensions = consoleSize ()
+    let consoleDimensions = Console.consoleSize ()
     let rect = rect TopLeft TopLeft (None ()) 0 0 consoleDimensions
-    let chars, foregrounds, backgrounds = createEmptyBuffers consoleDimensions.x consoleDimensions.y
+    let chars, foregrounds, backgrounds = createEmptyBuffers consoleDimensions
     let newWindow = { window with rect = rect; charBuffer = chars; foregroundColorBuffer = foregrounds; backgroundColorBuffer = backgrounds }
     for i = 0 to newWindow.fragments.Count - 1 do
         newWindow.fragments.[i] <- Option.map (fun f -> { f with rect = rectWithNewParent (Parent newWindow.rect) f.rect }) newWindow.fragments.[i]
     newWindow
 
 let scaleToConsole window =
-    if window.rect.dimensions = consoleSize () |> not then
+    if window.rect.dimensions = Console.consoleSize () |> not then
         true, resize window
     else
         false, window
@@ -79,9 +69,9 @@ let scaleToConsole window =
 let clearBuffers window =
     for y = 0 to window.rect.dimensions.y - 1 do
         for x = 0 to window.rect.dimensions.x - 1 do
-            window.charBuffer.[y].[x] <- ' '
-            window.foregroundColorBuffer.[y].[x] <- defaultForeground
-            window.backgroundColorBuffer.[y].[x] <- defaultBackground
+            window.charBuffer[x, y] <- ' '
+            window.foregroundColorBuffer[x, y] <- defaultForeground
+            window.backgroundColorBuffer[x, y] <- defaultBackground
 
 let addFragment window fragment =
     let rec findEmptySlot i fragmentToAdd =
@@ -112,9 +102,9 @@ let writeBuffer window =
                 let X = fPos.x + x
                 let Y = fPos.y + y
                 if X > -1 && X < window.rect.dimensions.x && Y > -1 && Y < window.rect.dimensions.y then
-                    window.charBuffer.[Y].[X] <- fragment.chars.[y].[x]
-                    window.foregroundColorBuffer.[Y].[X] <- fragment.foregroundColor
-                    window.backgroundColorBuffer.[Y].[X] <- fragment.backgroundColor
+                    window.charBuffer[X, Y] <- fragment.chars.[y].[x]
+                    window.foregroundColorBuffer[X, Y] <- fragment.foregroundColor
+                    window.backgroundColorBuffer[X, Y] <- fragment.backgroundColor
     for fragment in window.fragments do
         match fragment with
             | Some f -> writeFragmentToBuffer f
@@ -123,11 +113,11 @@ let writeBuffer window =
 let drawBuffer window =
     for y = 0 to window.rect.dimensions.y - 1 do
         for x = 0 to window.rect.dimensions.x - 1 do
-            setColor <| unpackColor window.backgroundColorBuffer.[y].[x] <| unpackColor window.foregroundColorBuffer.[y].[x]
-            writeChar x y window.charBuffer.[y].[x]
+            Console.setColor <| unpackColor window.backgroundColorBuffer[x, y] <| unpackColor window.foregroundColorBuffer[x, y]
+            Console.writeChar x y window.charBuffer[x, y]
 
 let rec mainLoop window : unit =
-    clearConsole ()
+    Console.clearConsole ()
 
     let windowScaled, newWindow = scaleToConsole window
     if not <| windowScaled then clearBuffers window
