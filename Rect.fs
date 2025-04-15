@@ -33,8 +33,7 @@ let absolutePosition parent pivot anchor localPosition dimensions =
                       localPosition + pivotShift + anchorShift + p.absolutePosition
         | None _   -> localPosition
     
-let rect pivot anchor parent x y width height =
-    let dimensions = vector width height
+let rect pivot anchor parent x y dimensions =
     let localPosition = vector x y
     let absolutePosition = absolutePosition parent pivot anchor localPosition dimensions
     { absolutePosition = absolutePosition; localPosition = localPosition; dimensions = dimensions; pivot = pivot; anchor = anchor }

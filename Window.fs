@@ -47,10 +47,10 @@ let createEmptyBuffers width height =
 
 let window fps =
     prepareConsole ()
-    let width, height = consoleSize ()
-    let chars, foregrounds, backgrounds = createEmptyBuffers width height
+    let consoleDimensions = consoleSize ()
+    let chars, foregrounds, backgrounds = createEmptyBuffers consoleDimensions.x consoleDimensions.y
     {
-        rect = rect TopLeft TopLeft (None ()) 0 0 width height
+        rect = rect TopLeft TopLeft (None ()) 0 0 consoleDimensions
         sleepTime = fps |> double |> (/) 1000.0 |> floorToInt
         keyReader = keyReader ()
         charBuffer = chars
@@ -61,16 +61,16 @@ let window fps =
     }
 
 let resize window = 
-    let width, height = consoleSize ()
-    let rect = rect TopLeft TopLeft (None ()) 0 0 width height
-    let chars, foregrounds, backgrounds = createEmptyBuffers width height
+    let consoleDimensions = consoleSize ()
+    let rect = rect TopLeft TopLeft (None ()) 0 0 consoleDimensions
+    let chars, foregrounds, backgrounds = createEmptyBuffers consoleDimensions.x consoleDimensions.y
     let newWindow = { window with rect = rect; charBuffer = chars; foregroundColorBuffer = foregrounds; backgroundColorBuffer = backgrounds }
     for i = 0 to newWindow.fragments.Count - 1 do
         newWindow.fragments.[i] <- Option.map (fun f -> { f with rect = rectWithNewParent (Parent newWindow.rect) f.rect }) newWindow.fragments.[i]
     newWindow
 
 let scaleToConsole window =
-    if vectorTupleEqual window.rect.dimensions (consoleSize ()) |> not then
+    if window.rect.dimensions = consoleSize () |> not then
         true, resize window
     else
         false, window

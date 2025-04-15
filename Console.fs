@@ -1,5 +1,6 @@
 module Minotaur.Console
 open System
+open Minotaur.Utilities.Vector
 
 let defaultBackgroundColor = ConsoleColor.Black
 let defaultForegroundColor = ConsoleColor.White
@@ -10,7 +11,7 @@ let prepareConsole () =
     Console.ForegroundColor <- defaultForegroundColor
 
 let consoleSize () =
-    Console.WindowWidth, Console.WindowHeight
+    vector Console.WindowWidth Console.WindowHeight
 
 let clearConsole () =
     Console.Clear ()
