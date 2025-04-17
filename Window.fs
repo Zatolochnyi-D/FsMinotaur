@@ -59,17 +59,18 @@ let resize window =
     newWindow
 
 let scaleToConsole window =
-    if window.rect.dimensions = Console.consoleSize () |> not then
+    if window.rect.dimensions <> Console.consoleSize () then
         true, resize window
     else
         false, window
 
+// Idk where to add generic functions so let's hope it works.
+// Replaced for-loop with Array2D functions.
 let clearBuffers window =
-    for y = 0 to window.rect.dimensions.y - 1 do
-        for x = 0 to window.rect.dimensions.x - 1 do
-            window.charBuffer[x, y] <- ' '
-            window.foregroundColorBuffer[x, y] <- defaultForeground
-            window.backgroundColorBuffer[x, y] <- defaultBackground
+    let clearFunction (array: 'T array2d) (deafultValue: 'T) = Array2D.iteri (fun x y _ -> array[x, y] <- deafultValue) array
+    clearFunction window.charBuffer ' '
+    clearFunction window.foregroundColorBuffer defaultForeground
+    clearFunction window.backgroundColorBuffer defaultBackground
 
 let addFragment window fragment =
     let rec findEmptySlot i fragmentToAdd =

@@ -24,11 +24,11 @@ let private alignCenter targetLength (string: string) =
 let textBox pivot anchor alignment parent foregroundColor backgroundColor x y (text: string) =
     let lines = text.Split '\n'
     let biggestLength = lines.Max (fun x -> x.Length)
-    let alignFunc = 
+    let alignFunction = 
         match alignment with
         | Left -> alignLeft biggestLength
         | Middle -> alignCenter biggestLength
-    let alignedLines = Array.map alignFunc lines
+    let alignedLines = Array.map alignFunction lines
     let fragmentContent = Array2D.init biggestLength lines.Length (fun x y -> alignedLines[y].[x])
     let fragment = fragment pivot anchor parent foregroundColor backgroundColor x y fragmentContent
     { text = text; alignment = alignment; fragment = fragment }
