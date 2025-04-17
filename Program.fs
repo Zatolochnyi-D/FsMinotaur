@@ -13,7 +13,7 @@ let selectionColor = green
 
 let mainWindow = window 30
 
-let menu1TextBoxFunc = textBox Center TopCenter Middle mainWindow.rect defaultColor black
+let menu1TextBoxFunc = textBox Center TopCenter Middle (Some mainWindow.rect) defaultColor black
 let menu1Item1 =
     let item = menu1TextBoxFunc 0 5 "┌────────────┐\n\
                                      │  Settings  │\n\

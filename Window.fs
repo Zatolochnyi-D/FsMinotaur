@@ -28,7 +28,7 @@ type Window = {
 let defaultForeground = white
 let defaultBackground = black
 
-let createEmptyBuffers dimensions =
+let private createEmptyBuffers dimensions =
     let x, y = dimensions.x, dimensions.y
     let chars = Array2D.create x y ' '
     let foregrounds = Array2D.create x y defaultForeground
@@ -49,13 +49,13 @@ let window fps =
         bindings = ResizeArray<Binding> ()
     }
 
-let resize window = 
+let private resize window = 
     let consoleDimensions = Console.consoleSize ()
     let rect = rect TopLeft TopLeft None 0 0 consoleDimensions
     let chars, foregrounds, backgrounds = createEmptyBuffers consoleDimensions
     let newWindow = { window with rect = rect; charBuffer = chars; foregroundColorBuffer = foregrounds; backgroundColorBuffer = backgrounds }
     for i = 0 to newWindow.fragments.Count - 1 do
-        newWindow.fragments.[i] <- Option.map (fun f -> { f with rect = rectWithNewParent (Some newWindow.rect) f.rect }) newWindow.fragments.[i]
+        newWindow.fragments.[i] <- Option.map (fun f -> fragmentWithNewParent (Some newWindow.rect) f) newWindow.fragments.[i]
     newWindow
 
 let scaleToConsole window =
