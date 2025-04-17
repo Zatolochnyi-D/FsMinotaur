@@ -39,7 +39,7 @@ let window fps =
     let consoleDimensions = Console.consoleSize ()
     let chars, foregrounds, backgrounds = createEmptyBuffers consoleDimensions
     {
-        rect = rect TopLeft TopLeft (None ()) 0 0 consoleDimensions
+        rect = rect TopLeft TopLeft None 0 0 consoleDimensions
         sleepTime = fps |> double |> (/) 1000.0 |> floorToInt
         keyReader = Console.keyReader ()
         charBuffer = chars
@@ -51,11 +51,11 @@ let window fps =
 
 let resize window = 
     let consoleDimensions = Console.consoleSize ()
-    let rect = rect TopLeft TopLeft (None ()) 0 0 consoleDimensions
+    let rect = rect TopLeft TopLeft None 0 0 consoleDimensions
     let chars, foregrounds, backgrounds = createEmptyBuffers consoleDimensions
     let newWindow = { window with rect = rect; charBuffer = chars; foregroundColorBuffer = foregrounds; backgroundColorBuffer = backgrounds }
     for i = 0 to newWindow.fragments.Count - 1 do
-        newWindow.fragments.[i] <- Option.map (fun f -> { f with rect = rectWithNewParent (Parent newWindow.rect) f.rect }) newWindow.fragments.[i]
+        newWindow.fragments.[i] <- Option.map (fun f -> { f with rect = rectWithNewParent (Some newWindow.rect) f.rect }) newWindow.fragments.[i]
     newWindow
 
 let scaleToConsole window =

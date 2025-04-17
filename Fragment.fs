@@ -13,7 +13,7 @@ type Fragment = {
 
 let fragment pivot anchor parent foregroundColor backgroundColor x y (content: List<List<char>>) =
     let dimensions = vector content.[0].Count content.Count
-    let rect = rect pivot anchor (Parent parent) x y dimensions
+    let rect = rect pivot anchor (Some parent) x y dimensions
     { rect = rect; chars = content; foregroundColor = foregroundColor; backgroundColor = backgroundColor }
 
 let setFragmentForeground fragment color = { fragment with foregroundColor = color }
