@@ -22,3 +22,6 @@ let white = Color ConsoleColor.White
 let unpackColor color =
     match color with
         | Color x -> x
+
+type Color with 
+    member this.get = unpackColor this

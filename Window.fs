@@ -92,7 +92,7 @@ let writeBuffer window =
         Option.iter (fun f -> writeFragmentToBuffer f) fragment 
 
 let drawBuffer window =
-    Array2D.iteri (fun x y (ch, bg, fg) -> Console.setColor <| unpackColor bg <| unpackColor fg; Console.writeChar x y ch) window.buffer
+    Array2D.iteri (fun x y (ch, bg: Color, fg: Color) -> Console.setColor <| bg.get <| fg.get; Console.writeChar x y ch) window.buffer
 
 let rec mainLoop window : unit =
     Console.clearConsole ()
