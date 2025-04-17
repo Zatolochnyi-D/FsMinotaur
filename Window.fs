@@ -58,7 +58,7 @@ let private resize window =
         newWindow.fragments.[i] <- Option.map (fun f -> fragmentWithNewParent (Some newWindow.rect) f) newWindow.fragments.[i]
     newWindow
 
-let scaleToConsole window =
+let tryScaleToConsole window =
     if window.rect.dimensions <> Console.consoleSize () then
         true, resize window
     else
@@ -87,10 +87,10 @@ let getFragment window index =
     match window.fragments.[index] with
         | Some f -> f
         | None -> raise (NullValue "Trying read null value")
+
 let setFragment window index fragment = window.fragments.[index] <- Some fragment
 
-let addBinding window binding =
-    window.bindings.Add binding
+let addBinding window binding = window.bindings.Add binding
      
 let writeBuffer window =
     let writeFragmentToBuffer (fragment: Fragment) =
@@ -105,9 +105,7 @@ let writeBuffer window =
                     window.foregroundColorBuffer[X, Y] <- fragment.foregroundColor
                     window.backgroundColorBuffer[X, Y] <- fragment.backgroundColor
     for fragment in window.fragments do
-        match fragment with
-            | Some f -> writeFragmentToBuffer f
-            | None -> ()     
+        Option.iter (fun f -> writeFragmentToBuffer f) fragment 
 
 let drawBuffer window =
     for y = 0 to window.rect.dimensions.y - 1 do
@@ -118,7 +116,7 @@ let drawBuffer window =
 let rec mainLoop window : unit =
     Console.clearConsole ()
 
-    let windowScaled, newWindow = scaleToConsole window
+    let windowScaled, newWindow = tryScaleToConsole window
     if not <| windowScaled then clearBuffers window
 
     let key = newWindow.keyReader ()
