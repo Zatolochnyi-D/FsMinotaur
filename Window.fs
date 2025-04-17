@@ -76,7 +76,7 @@ let addFragment window fragment =
         if i <> window.fragments.Count then
             match window.fragments.[i] with
             | Some _ -> findEmptySlot (i + 1) fragmentToAdd
-            | Option.None -> window.fragments.[i] <- fragmentToAdd; i
+            | None -> window.fragments.[i] <- fragmentToAdd; i
         else
             window.fragments.Add fragmentToAdd
             i
@@ -85,7 +85,7 @@ let addFragment window fragment =
 let getFragment window index =
     match window.fragments.[index] with
         | Some f -> f
-        | Option.None -> raise (NullValue "Trying read null value")
+        | None -> raise (NullValue "Trying read null value")
 let setFragment window index fragment = window.fragments.[index] <- Some fragment
 
 let addBinding window binding =
@@ -100,13 +100,13 @@ let writeBuffer window =
                 let X = fPos.x + x
                 let Y = fPos.y + y
                 if X > -1 && X < window.rect.dimensions.x && Y > -1 && Y < window.rect.dimensions.y then
-                    window.charBuffer[X, Y] <- fragment.chars.[y].[x]
+                    window.charBuffer[X, Y] <- fragment.chars[x, y]
                     window.foregroundColorBuffer[X, Y] <- fragment.foregroundColor
                     window.backgroundColorBuffer[X, Y] <- fragment.backgroundColor
     for fragment in window.fragments do
         match fragment with
             | Some f -> writeFragmentToBuffer f
-            | Option.None -> ()     
+            | None -> ()     
 
 let drawBuffer window =
     for y = 0 to window.rect.dimensions.y - 1 do
