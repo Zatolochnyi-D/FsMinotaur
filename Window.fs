@@ -8,20 +8,19 @@ open Utilities.Misc
 open GUI.Fragment
 open Window.Bindings
 open Utilities.Vector
+open Minotaur.Utilities.Storage
 
-// Changes:
 // Replaced NullableFragment with Option.
 // Replaced list buffers with 2d arrays.
-
-exception NullValue of string
+// Replaced Option list with generic Storage.
 
 type Window = {
     rect: Rect
     sleepTime: int
     keyReader: unit -> ConsoleKey
     buffer: (char * Color * Color) array2d
-    fragments: Fragment option ResizeArray
-    bindings: Binding ResizeArray
+    fragments: Fragment Storage
+    bindings: Binding Storage
 }
 let defaultForeground = white
 let defaultBackground = black
@@ -37,48 +36,36 @@ let window fps =
         sleepTime = fps |> double |> (/) 1000.0 |> floorToInt
         keyReader = Console.keyReader ()
         buffer = createEmptyBuffers consoleDimensions
-        fragments = ResizeArray<Fragment option> ()
-        bindings = ResizeArray<Binding> ()
+        fragments = storage<Fragment> ()
+        bindings = storage<Binding> ()
     }
 
 let private resize window = 
     let consoleDimensions = Console.consoleSize ()
     let rect = rect TopLeft TopLeft None 0 0 consoleDimensions
     let newWindow = { window with rect = rect; buffer = createEmptyBuffers consoleDimensions }
-    for i = 0 to newWindow.fragments.Count - 1 do
-        newWindow.fragments.[i] <- Option.map (fun f -> fragmentWithNewParent (Some newWindow.rect) f) newWindow.fragments.[i]
+    for i = 0 to storageSize window.fragments - 1 do
+        newWindow.fragments.list[i] <- Option.map (fun f -> fragmentWithNewParent (Some newWindow.rect) f) newWindow.fragments.list[i]
     newWindow
 
-let tryScaleToConsole window =
+let private tryScaleToConsole window =
     if window.rect.dimensions <> Console.consoleSize () then
         true, resize window
     else
         false, window
 
-let clearBuffers window =
+let private clearBuffers window =
     Array2D.iteri (fun x y _ -> window.buffer[x, y] <- (' ', defaultBackground, defaultForeground)) window.buffer
 
-let addFragment window fragment =
-    let rec findEmptySlot i fragmentToAdd =
-        if i <> window.fragments.Count then
-            match window.fragments.[i] with
-            | Some _ -> findEmptySlot (i + 1) fragmentToAdd
-            | None -> window.fragments.[i] <- fragmentToAdd; i
-        else
-            window.fragments.Add fragmentToAdd
-            i
-    findEmptySlot 0 (Some fragment)
+let addFragment window fragment = addElement window.fragments fragment
 
-let getFragment window index =
-    match window.fragments.[index] with
-        | Some f -> f
-        | None -> raise (NullValue "Trying read null value")
+let getFragment window index = getElement window.fragments index
 
-let setFragment window index fragment = window.fragments.[index] <- Some fragment
+let setFragment window index fragment = setElement window.fragments index fragment
 
-let addBinding window binding = window.bindings.Add binding
+let addBinding window binding = addElement window.bindings binding
      
-let writeBuffer window =
+let private writeBuffer window =
     let writeFragmentToBuffer (fragment: Fragment) =
         let fDim = fragment.rect.dimensions
         let fPos = fragment.rect.absolutePosition
@@ -88,10 +75,9 @@ let writeBuffer window =
                 let Y = fPos.y + y
                 if X > -1 && X < window.rect.dimensions.x && Y > -1 && Y < window.rect.dimensions.y then
                     window.buffer[X, Y] <- fragment.chars[x, y], fragment.backgroundColor, fragment.foregroundColor
-    for fragment in window.fragments do
-        Option.iter (fun f -> writeFragmentToBuffer f) fragment 
+    Storage.iter (fun f -> writeFragmentToBuffer f) window.fragments
 
-let drawBuffer window =
+let private drawBuffer window =
     Array2D.iteri (fun x y (ch, bg: Color, fg: Color) -> Console.setColor <| bg.get <| fg.get; Console.writeChar x y ch) window.buffer
 
 let rec mainLoop window : unit =
@@ -101,9 +87,8 @@ let rec mainLoop window : unit =
     if not <| windowScaled then clearBuffers window
 
     let key = newWindow.keyReader ()
-    for bind in newWindow.bindings do
-        if bind.key = key then
-            bind.func ()
+    for bind in newWindow.bindings.list do
+        Option.iter (fun x -> if x.key = key then x.func ()) bind
 
     writeBuffer newWindow
     drawBuffer newWindow

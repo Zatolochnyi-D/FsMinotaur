@@ -13,7 +13,7 @@ type Rect = {
     parent: Rect option
 }
 
-// Removed RectParent type, is replace by Option.
+// Removed RectParent type, replaced by Option.
 
 let private rectPivotShift pivot dimensions =
     match pivot with
