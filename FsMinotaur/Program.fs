@@ -47,6 +47,5 @@ addBinding mainWindow (binding ConsoleKey.Escape (fun () -> Environment.Exit 0))
 
 [<EntryPoint>]
 let main args =
-    Console.prepareConsole ()
     mainLoop mainWindow
     0

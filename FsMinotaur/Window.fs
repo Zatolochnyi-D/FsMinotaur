@@ -1,6 +1,6 @@
 module Minotaur.Window.Window
-open System
 open System.Threading
+open ConsoleFacade
 open Minotaur
 open Colors
 open GUI.Rect
@@ -10,18 +10,6 @@ open Window.Bindings
 open Utilities.Vector
 open Minotaur.Utilities.Storage
 
-// Replaced NullableFragment with Option.
-// Replaced list buffers with 2d arrays.
-// Replaced Option list with generic Storage.
-
-type Window = {
-    rect: Rect
-    sleepTime: int
-    keyReader: unit -> ConsoleKey
-    buffer: (char * Color * Color) array2d
-    fragments: Fragment Storage
-    bindings: Binding Storage
-}
 let defaultForeground = white
 let defaultBackground = black
 
@@ -29,19 +17,29 @@ let private createEmptyBuffers dimensions =
     let x, y = dimensions.x, dimensions.y
     Array2D.create x y (' ', defaultBackground, defaultForeground)
 
+type Window = {
+    console: ConsoleFacade
+    rect: Rect
+    sleepTime: int
+    buffer: (char * Color * Color) array2d
+    fragments: Fragment Storage
+    bindings: Binding Storage
+}
+
 let window fps =
-    let consoleDimensions = Console.consoleSize ()
+    let cons = ConsoleFacade ()
+    let consoleDimensions = vectorFromStructTuple cons.ConsoleSize
     {
+        console = cons
         rect = rect TopLeft TopLeft None 0 0 consoleDimensions
         sleepTime = fps |> double |> (/) 1000.0 |> floorToInt
-        keyReader = Console.keyReader ()
         buffer = createEmptyBuffers consoleDimensions
         fragments = storage<Fragment> ()
         bindings = storage<Binding> ()
     }
 
 let private resize window = 
-    let consoleDimensions = Console.consoleSize ()
+    let consoleDimensions = vectorFromStructTuple window.console.ConsoleSize
     let rect = rect TopLeft TopLeft None 0 0 consoleDimensions
     let newWindow = { window with rect = rect; buffer = createEmptyBuffers consoleDimensions }
     for i = 0 to storageSize window.fragments - 1 do
@@ -49,7 +47,7 @@ let private resize window =
     newWindow
 
 let private tryScaleToConsole window =
-    if window.rect.dimensions <> Console.consoleSize () then
+    if window.rect.dimensions <> vectorFromStructTuple window.console.ConsoleSize then
         true, resize window
     else
         false, window
@@ -78,15 +76,15 @@ let private writeBuffer window =
     Storage.iter (fun f -> writeFragmentToBuffer f) window.fragments
 
 let private drawBuffer window =
-    Array2D.iteri (fun x y (ch, bg: Color, fg: Color) -> Console.setColor <| bg.get <| fg.get; Console.writeChar x y ch) window.buffer
+    Array2D.iteri (fun x y (ch, bg: Color, fg: Color) -> window.console.SetColor (bg.get, fg.get); window.console.WriteChar (x, y, ch)) window.buffer
 
 let rec mainLoop window : unit =
-    Console.clearConsole ()
+    window.console.Clear ()
 
     let windowScaled, newWindow = tryScaleToConsole window
     if not <| windowScaled then clearBuffers window
 
-    let key = newWindow.keyReader ()
+    let key = newWindow.console.ReadKey ()
     for bind in newWindow.bindings.list do
         Option.iter (fun x -> if x.key = key then x.func ()) bind
 
