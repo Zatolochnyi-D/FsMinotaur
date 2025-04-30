@@ -6,12 +6,14 @@ open Colors
 open Window.Bindings
 open GUI.Rect
 open GUI.Fragment
-open Utilities.Misc
 open Utilities.Vector
 open Utilities.Storage
 
 let defaultForeground = white
 let defaultBackground = black
+
+let floorToInt (x: double) =
+    x 
 
 let private createEmptyBuffers dimensions =
     let x, y = dimensions.x, dimensions.y
@@ -20,7 +22,7 @@ let private createEmptyBuffers dimensions =
 type Window(fps: int) =
     let console = ConsoleFacade ()
     let mutable windowRect = rect TopLeft TopLeft None 0 0 (vectorFromStructTuple console.ConsoleSize)
-    let sleepTime = fps |> double |> (/) 1000.0 |> floorToInt
+    let sleepTime = fps |> double |> (/) 1000.0 |> System.Math.Floor |> int
     let buffer = createEmptyBuffers windowRect.dimensions
     let fragments = storage<Fragment> ()
     let bindings = storage<Binding> ()

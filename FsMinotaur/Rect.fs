@@ -1,6 +1,9 @@
 module Minotaur.GUI.Rect
 open Minotaur.Utilities.Vector
-open Minotaur.Utilities.Misc
+
+let private center sideSize =
+    let shift = -1 + sideSize % 2
+    sideSize / 2 + shift
 
 type Anchor = TopLeft | TopCenter | Center
 
@@ -12,8 +15,6 @@ type Rect = {
     anchor: Anchor
     parent: Rect option
 }
-
-// Removed RectParent type, replaced by Option.
 
 let private rectPivotShift pivot dimensions =
     match pivot with
@@ -29,7 +30,6 @@ let private rectAnchorShift parentRect anchor =
         | Center -> vector (center parentRect.dimensions.x) (center parentRect.dimensions.y)
     anchorShift
 
-// Replaced pattern matching
 let private absolutePosition parent pivot anchor localPosition dimensions =
     let onPresentParent p =
         let pivotShift = rectPivotShift pivot dimensions

@@ -3,7 +3,6 @@ open Minotaur.Colors
 open Minotaur.GUI.Rect
 open Minotaur.Utilities.Vector
 
-// Replaced list of lists with 2d array
 type Fragment = {
     rect: Rect
     chars: char array2d

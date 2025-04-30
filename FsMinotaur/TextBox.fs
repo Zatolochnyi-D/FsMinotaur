@@ -20,7 +20,6 @@ let private alignCenter targetLength (string: string) =
     let rightEmpty = String.replicate (emptyLength / 2) " "
     leftEmpty + string + rightEmpty
 
-// Used Array functions instead of list initialization.
 let textBox pivot anchor alignment parent foregroundColor backgroundColor x y (text: string) =
     let lines = text.Split '\n'
     let biggestLength = lines.Max (fun x -> x.Length)
