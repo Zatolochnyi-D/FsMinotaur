@@ -33,3 +33,7 @@ module Storage =
     let iter action storage =
         for el in storage.list do
             Option.iter action el
+
+    let map action storage =
+        for i = 0 to storageSize storage - 1 do
+            storage.list[i] <- storage.list[i] |> Option.map action

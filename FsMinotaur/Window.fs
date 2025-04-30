@@ -12,9 +12,6 @@ open Utilities.Storage
 let defaultForeground = white
 let defaultBackground = black
 
-let floorToInt (x: double) =
-    x 
-
 let private createEmptyBuffers dimensions =
     let x, y = dimensions.x, dimensions.y
     Array2D.create x y (' ', defaultBackground, defaultForeground)
@@ -30,19 +27,14 @@ type Window(fps: int) =
     member val Rect = windowRect
 
     new () = Window 60
-
-    member private _.ClearBuffers () =
-        Array2D.iteri (fun x y _ -> buffer[x, y] <- ' ', defaultBackground, defaultForeground) buffer
     
-    member private _.TrySyncWithConsoleSize () =
+    member private _.SyncWithConsoleSizeOrClearBuffers () =
         let consoleDimensions = vectorFromStructTuple console.ConsoleSize
         if windowRect.dimensions <> consoleDimensions then
             windowRect <- rect TopLeft TopLeft None 0 0 consoleDimensions
-            for i = 0 to storageSize fragments - 1 do
-                fragments.list[i] <- Option.map (fun f -> fragmentWithNewParent (Some windowRect) f) fragments.list[i]
-            true
+            Storage.map (fun f -> fragmentWithNewParent (Some windowRect) f) fragments
         else
-            false
+            Array2D.iteri (fun x y _ -> buffer[x, y] <- ' ', defaultBackground, defaultForeground) buffer
 
     member private _.WriteBuffer () =
         let writeFragmentToBuffer (fragment: Fragment) =
@@ -61,11 +53,10 @@ type Window(fps: int) =
 
     member this.MainLoop () : unit =
         console.Clear ()
-        if not <| this.TrySyncWithConsoleSize () then this.ClearBuffers()
+        this.SyncWithConsoleSizeOrClearBuffers ()
 
         let key = console.ReadKey ()
-        for bind in bindings.list do
-            Option.iter (fun x -> if x.key = key then x.func ()) bind
+        Storage.iter (fun x -> if x.key = key then x.func ()) bindings
 
         this.WriteBuffer ()
         this.DrawBuffer ()

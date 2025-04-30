@@ -46,6 +46,6 @@ mainWindow.AddBinding (binding ConsoleKey.W (fun () -> switch -1)) |> ignore
 mainWindow.AddBinding (binding ConsoleKey.Escape (fun () -> Environment.Exit 0)) |> ignore
 
 [<EntryPoint>]
-let main args =
+let main _ =
     mainWindow.MainLoop ()
     0
