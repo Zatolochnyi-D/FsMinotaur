@@ -19,13 +19,7 @@ public class ConsoleFacade
 
     private async void StartKeyReader()
     {
-        await Task.Run(() =>
-        {
-            while (true)
-            {
-                consoleKey = Console.ReadKey(true).Key;
-            }
-        });
+        await Task.Run(() => { while (true) consoleKey = Console.ReadKey(true).Key; });
     }
 
     public void Clear()

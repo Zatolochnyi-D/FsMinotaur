@@ -18,11 +18,11 @@ let menu1Item1 =
                                      │  Settings  │\n\
                                      └────────────┘"
     setTextForeground item selectionColor
-let menu1Item1Id = addFragment mainWindow menu1Item1.fragment
+let menu1Item1Id = mainWindow.AddFragment menu1Item1.fragment
 let menu1Item2 = menu1TextBoxFunc 0 10 "┌────────────┐\n\
                                         │    Exit    │\n\
                                         └────────────┘"
-let menu1Item2Id = addFragment mainWindow menu1Item2.fragment
+let menu1Item2Id = mainWindow.AddFragment menu1Item2.fragment
 
 let itemCounter firstSelection =
     let minSelection, maxSelection = 0, 1
@@ -38,14 +38,14 @@ let selector = itemCounter 0
 let switch direction =
     let prevIndex = selector 0
     let nextIndex = selector direction
-    setFragment mainWindow prevIndex (setFragmentForeground (getFragment mainWindow prevIndex) defaultColor)
-    setFragment mainWindow nextIndex (setFragmentForeground (getFragment mainWindow nextIndex) selectionColor)
+    mainWindow.SetFragment prevIndex (setFragmentForeground (mainWindow.GetFragment prevIndex) defaultColor)
+    mainWindow.SetFragment nextIndex (setFragmentForeground (mainWindow.GetFragment nextIndex) selectionColor)
 
-addBinding mainWindow (binding ConsoleKey.S (fun () -> switch 1)) |> ignore
-addBinding mainWindow (binding ConsoleKey.W (fun () -> switch -1)) |> ignore
-addBinding mainWindow (binding ConsoleKey.Escape (fun () -> Environment.Exit 0)) |> ignore
+mainWindow.AddBinding (binding ConsoleKey.S (fun () -> switch 1)) |> ignore
+mainWindow.AddBinding (binding ConsoleKey.W (fun () -> switch -1)) |> ignore
+mainWindow.AddBinding (binding ConsoleKey.Escape (fun () -> Environment.Exit 0)) |> ignore
 
 [<EntryPoint>]
 let main args =
-    mainLoop mainWindow
+    mainWindow.MainLoop ()
     0

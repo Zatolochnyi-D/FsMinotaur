@@ -3,12 +3,12 @@ open System.Threading
 open ConsoleFacade
 open Minotaur
 open Colors
-open GUI.Rect
-open Utilities.Misc
-open GUI.Fragment
 open Window.Bindings
+open GUI.Rect
+open GUI.Fragment
+open Utilities.Misc
 open Utilities.Vector
-open Minotaur.Utilities.Storage
+open Utilities.Storage
 
 let defaultForeground = white
 let defaultBackground = black
@@ -19,80 +19,62 @@ let private createEmptyBuffers dimensions =
 
 type Window(fps: int) =
     let console = ConsoleFacade ()
-    let rect = rect TopLeft TopLeft None 0 0 (vectorFromStructTuple console.ConsoleSize)
+    let mutable windowRect = rect TopLeft TopLeft None 0 0 (vectorFromStructTuple console.ConsoleSize)
     let sleepTime = fps |> double |> (/) 1000.0 |> floorToInt
-    let buffer = createEmptyBuffers rect.dimensions
+    let buffer = createEmptyBuffers windowRect.dimensions
     let fragments = storage<Fragment> ()
     let bindings = storage<Binding> ()
 
-    member val Fps = fps
-    member val SleepTime = sleepTime
-    member val Size = vectorFromStructTuple console.ConsoleSize
-    member val Rect = rect
-    member val Buffer = buffer
-    member val Fragments = fragments
-    member val Bindings = bindings
+    member val Rect = windowRect
 
     new () = Window 60
-    new(oldWindow: Window) = Window oldWindow.Fps
 
-    member _.SetColor (background: Color) (foreground: Color) = console.SetColor (background.get, foreground.get)
-    member _.WriteChar x y char = console.WriteChar (x, y, char)
-    member _.Clear () = console.Clear ()
-    member _.ReadKey () = console.ReadKey ()
+    member private _.ClearBuffers () =
+        Array2D.iteri (fun x y _ -> buffer[x, y] <- ' ', defaultBackground, defaultForeground) buffer
+    
+    member private _.TrySyncWithConsoleSize () =
+        let consoleDimensions = vectorFromStructTuple console.ConsoleSize
+        if windowRect.dimensions <> consoleDimensions then
+            windowRect <- rect TopLeft TopLeft None 0 0 consoleDimensions
+            for i = 0 to storageSize fragments - 1 do
+                fragments.list[i] <- Option.map (fun f -> fragmentWithNewParent (Some windowRect) f) fragments.list[i]
+            true
+        else
+            false
 
-let private resize (window: Window) = 
-    let consoleDimensions = window.Size
-    let rect = rect TopLeft TopLeft None 0 0 consoleDimensions
-    let newWindow = Window window
-    for i = 0 to storageSize window.Fragments - 1 do
-        newWindow.Fragments.list[i] <- Option.map (fun f -> fragmentWithNewParent (Some newWindow.Rect) f) newWindow.Fragments.list[i]
-    newWindow
+    member private _.WriteBuffer () =
+        let writeFragmentToBuffer (fragment: Fragment) =
+            let fDim = fragment.rect.dimensions
+            let fPos = fragment.rect.absolutePosition
+            for y = 0 to fDim.y - 1 do
+                for x = 0 to fDim.x - 1 do
+                    let X = fPos.x + x
+                    let Y = fPos.y + y
+                    if X > -1 && X < windowRect.dimensions.x && Y > -1 && Y < windowRect.dimensions.y then
+                        buffer[X, Y] <- fragment.chars[x, y], fragment.backgroundColor, fragment.foregroundColor
+        Storage.iter (fun f -> writeFragmentToBuffer f) fragments
 
-let private tryScaleToConsole (window: Window) =
-    if window.Rect.dimensions <> window.Size then
-        true, resize window
-    else
-        false, window
+    member private _.DrawBuffer () =
+        Array2D.iteri (fun x y (ch, bg: Color, fg: Color) -> console.SetColor (bg.get, fg.get); console.WriteChar (x, y, ch)) buffer
 
-let private clearBuffers (window: Window) =
-    Array2D.iteri (fun x y _ -> window.Buffer[x, y] <- (' ', defaultBackground, defaultForeground)) window.Buffer
+    member this.MainLoop () : unit =
+        console.Clear ()
+        if not <| this.TrySyncWithConsoleSize () then this.ClearBuffers()
 
-let addFragment (window: Window) fragment = addElement window.Fragments fragment
+        let key = console.ReadKey ()
+        for bind in bindings.list do
+            Option.iter (fun x -> if x.key = key then x.func ()) bind
 
-let getFragment (window: Window) index = getElement window.Fragments index
+        this.WriteBuffer ()
+        this.DrawBuffer ()
 
-let setFragment (window: Window) index fragment = setElement window.Fragments index fragment
+        Thread.Sleep sleepTime
+        this.MainLoop ()
 
-let addBinding (window: Window) binding = addElement window.Bindings binding
-     
-let private writeBuffer (window: Window) =
-    let writeFragmentToBuffer (fragment: Fragment) =
-        let fDim = fragment.rect.dimensions
-        let fPos = fragment.rect.absolutePosition
-        for y = 0 to fDim.y - 1 do
-            for x = 0 to fDim.x - 1 do
-                let X = fPos.x + x
-                let Y = fPos.y + y
-                if X > -1 && X < window.Rect.dimensions.x && Y > -1 && Y < window.Rect.dimensions.y then
-                    window.Buffer[X, Y] <- fragment.chars[x, y], fragment.backgroundColor, fragment.foregroundColor
-    Storage.iter (fun f -> writeFragmentToBuffer f) window.Fragments
+    member _.AddFragment fragment = addElement fragments fragment
 
-let private drawBuffer (window: Window) =
-    Array2D.iteri (fun x y (ch, bg: Color, fg: Color) -> window.SetColor <| bg <| fg; window.WriteChar x y ch) window.Buffer
+    member _.GetFragment index = getElement fragments index
 
-let rec mainLoop (window: Window) : unit =
-    window.Clear ()
+    member _.SetFragment index fragment = setElement fragments index fragment
 
-    let windowScaled, newWindow = tryScaleToConsole window
-    if not <| windowScaled then clearBuffers window
-
-    let key = newWindow.ReadKey ()
-    for bind in newWindow.Bindings.list do
-        Option.iter (fun x -> if x.key = key then x.func ()) bind
-
-    writeBuffer newWindow
-    drawBuffer newWindow
-
-    Thread.Sleep newWindow.SleepTime
-    mainLoop newWindow
+    member _.AddBinding binding = addElement bindings binding
