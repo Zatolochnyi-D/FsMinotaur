@@ -22,14 +22,14 @@ type Page() as this =
         this.Cycle (fun x -> (x - 1 + selectableIndices.Count) % selectableIndices.Count)
 
     member private this.Cycle cycleFunction =
-        this.RunOnButton (fun (b: IButton) -> b.Deselect())
+        this.RunOnButton (fun b -> b.Deselect())
         currentSelected <- Option.map cycleFunction currentSelected
-        this.RunOnButton (fun (b: IButton) -> b.Select())
+        this.RunOnButton (fun b -> b.Select())
 
     member private this.Execute () = 
-        this.RunOnButton (fun (b: IButton) -> b.Execute())
+        this.RunOnButton (fun b -> b.Execute())
 
-    member private _.RunOnButton funcToRun =
+    member private _.RunOnButton (funcToRun: IButton -> unit) =
         currentSelected
         |> Option.map (fun i -> Storage.getElement elements selectableIndices[i])
         |> Option.map (fun el -> el :?> IButton)
@@ -37,10 +37,11 @@ type Page() as this =
 
     member _.AddStaticElement element = Storage.addElement elements element
 
-    member _.AddSelectableElement (element: IGraphicalElement) =
+    member this.AddSelectableElement (element: IGraphicalElement) =
         let index = Storage.addElement elements element
         selectableIndices.Add index
         currentSelected <- Some 0
+        this.RunOnButton (fun b -> b.Select ())
         index
 
     member _.UpdateFragments rect = Storage.map (fun (el: IGraphicalElement) -> el.SetRect rect) elements
