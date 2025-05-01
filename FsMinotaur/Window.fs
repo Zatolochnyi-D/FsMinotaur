@@ -6,8 +6,10 @@ open Colors
 open Window.Bindings
 open GUI.Rect
 open GUI.Fragment
+open GUI.Interfaces
 open Utilities.Vector
 open Utilities.Storage
+open Minotaur.GUI.Page
 
 let defaultForeground = white
 let defaultBackground = black
@@ -21,7 +23,8 @@ type Window(fps: int) =
     let mutable windowRect = rect TopLeft TopLeft None 0 0 (vectorFromStructTuple console.ConsoleSize)
     let sleepTime = fps |> double |> (/) 1000.0 |> System.Math.Floor |> int
     let buffer = createEmptyBuffers windowRect.dimensions
-    let fragments = storage<Fragment> ()
+    let mutable currentPage = -1
+    let pages = storage<Page> ()
     let bindings = storage<Binding> ()
 
     member val Rect = windowRect
@@ -32,7 +35,7 @@ type Window(fps: int) =
         let consoleDimensions = vectorFromStructTuple console.ConsoleSize
         if windowRect.dimensions <> consoleDimensions then
             windowRect <- rect TopLeft TopLeft None 0 0 consoleDimensions
-            Storage.map (fun f -> fragmentWithNewParent (Some windowRect) f) fragments
+            Storage.iter (fun (p: Page) -> p.UpdateFragments windowRect) pages
         else
             Array2D.iteri (fun x y _ -> buffer[x, y] <- ' ', defaultBackground, defaultForeground) buffer
 
@@ -46,7 +49,10 @@ type Window(fps: int) =
                     let Y = fPos.y + y
                     if X > -1 && X < windowRect.dimensions.x && Y > -1 && Y < windowRect.dimensions.y then
                         buffer[X, Y] <- fragment.chars[x, y], fragment.backgroundColor, fragment.foregroundColor
-        Storage.iter (fun f -> writeFragmentToBuffer f) fragments
+        let writeAllFragments = Storage.iter (fun (el: IGraphicalElement) -> writeFragmentToBuffer el.Fragment)
+        let writeAllFragments2 = Storage.iter (fun (el: IButton) -> writeFragmentToBuffer el.Fragment)
+        Storage.getElementSafe pages currentPage |> Option.iter (fun p -> writeAllFragments p.StaticElements)
+        Storage.getElementSafe pages currentPage |> Option.iter (fun p -> writeAllFragments2 p.SelectableElements)
 
     member private _.DrawBuffer () =
         Array2D.iteri (fun x y (ch, bg: Color, fg: Color) -> console.SetColor (bg.get, fg.get); console.WriteChar (x, y, ch)) buffer
@@ -57,6 +63,7 @@ type Window(fps: int) =
 
         let key = console.ReadKey ()
         Storage.iter (fun x -> if x.key = key then x.func ()) bindings
+        Storage.getElementSafe pages currentPage |> Option.iter (fun p -> p.TriggerBinding key)
 
         this.WriteBuffer ()
         this.DrawBuffer ()
@@ -64,10 +71,8 @@ type Window(fps: int) =
         Thread.Sleep sleepTime
         this.MainLoop ()
 
-    member _.AddFragment fragment = addElement fragments fragment
+    member _.AddPage page = Storage.addElement pages page
 
-    member _.GetFragment index = getElement fragments index
+    member _.SetPageIndex index = currentPage <- index
 
-    member _.SetFragment index fragment = setElement fragments index fragment
-
-    member _.AddBinding binding = addElement bindings binding
+    member _.AddBinding binding = Storage.addElement bindings binding

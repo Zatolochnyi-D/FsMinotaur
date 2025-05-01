@@ -1,13 +1,20 @@
 module Minotaur.GUI.TextBox
 open System.Linq
-open Minotaur.GUI.Fragment
+open Minotaur.GUI
+open Fragment
+open Interfaces
 
+// Added interface implementation
 type TextAlignment = Left | Middle
 type TextBox = {
     text: string
     alignment: TextAlignment
     fragment: Fragment
-}
+} with interface IGraphicalElement with           
+        member this.Fragment = this.fragment
+        member this.SetRect rect = 
+            { this with fragment = fragmentWithNewParent (Some rect) this.fragment }
+            
 
 let private alignLeft targetLength (string: string) =
     let emptyLength = targetLength - string.Length
