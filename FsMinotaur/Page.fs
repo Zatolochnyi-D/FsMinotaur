@@ -37,7 +37,7 @@ type Page() as this =
 
     member _.AddStaticElement element = Storage.addElement elements element
 
-    member this.AddSelectableElement (element: IGraphicalElement) =
+    member this.AddSelectableElement element =
         let index = Storage.addElement elements element
         selectableIndices.Add index
         currentSelected <- Some 0

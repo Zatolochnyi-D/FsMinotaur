@@ -1,4 +1,4 @@
-﻿module Minotaur.Main
+﻿module Minotaur.Examples
 open System
 open Colors
 open Minotaur.GUI.Rect
