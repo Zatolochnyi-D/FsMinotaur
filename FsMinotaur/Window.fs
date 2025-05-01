@@ -14,7 +14,7 @@ open Minotaur.GUI.Page
 let defaultForeground = white
 let defaultBackground = black
 
-let private createEmptyBuffers dimensions =
+let private createEmptyBuffer dimensions =
     let x, y = dimensions.x, dimensions.y
     Array2D.create x y (' ', defaultBackground, defaultForeground)
 
@@ -22,7 +22,7 @@ type Window(fps: int) =
     let console = ConsoleFacade ()
     let mutable windowRect = rect TopLeft TopLeft None 0 0 (vectorFromStructTuple console.ConsoleSize)
     let sleepTime = fps |> double |> (/) 1000.0 |> System.Math.Floor |> int
-    let buffer = createEmptyBuffers windowRect.dimensions
+    let mutable buffer = createEmptyBuffer windowRect.dimensions
     let mutable currentPage = -1
     let pages = storage<Page> ()
     let bindings = storage<Binding> ()
@@ -35,6 +35,7 @@ type Window(fps: int) =
         let consoleDimensions = vectorFromStructTuple console.ConsoleSize
         if windowRect.dimensions <> consoleDimensions then
             windowRect <- rect TopLeft TopLeft None 0 0 consoleDimensions
+            buffer <- createEmptyBuffer windowRect.dimensions
             Storage.iter (fun (p: Page) -> p.UpdateFragments windowRect) pages
         else
             Array2D.iteri (fun x y _ -> buffer[x, y] <- ' ', defaultBackground, defaultForeground) buffer
