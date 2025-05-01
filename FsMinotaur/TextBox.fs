@@ -13,7 +13,6 @@ type TextBox = {
         member this.GetFragment () = this.fragment
         member this.SetRect rect = 
             { this with fragment = fragmentWithNewParent (Some rect) this.fragment }
-            
 
 let private alignLeft targetLength (string: string) =
     let emptyLength = targetLength - string.Length

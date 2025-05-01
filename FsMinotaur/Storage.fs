@@ -22,12 +22,6 @@ module Storage =
         match storage.list[index] with
         | Some v -> v
         | None -> raise (NullValue "Trying read null value")
-    
-    let getElementSafe storage index =
-        if index < 0 && index > storage.list.Count - 1 then
-            None
-        else
-            storage.list[index]
 
     let setElement storage index element = storage.list[index] <- Some element
 

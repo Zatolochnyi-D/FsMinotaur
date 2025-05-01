@@ -8,13 +8,10 @@ open Minotaur.Window.Bindings
 open Minotaur.GUI.Page
 open Minotaur.GUI.Button
 
-let defaultColor = white
-let selectionColor = green
-
 let mainWindow = Window 30
 let mainPage = Page ()
 
-let menu1TextBoxFunc = textBox Center TopCenter Middle (Some mainWindow.Rect) defaultColor black
+let menu1TextBoxFunc = textBox Center TopCenter Middle (Some mainWindow.Rect) white black
 
 let text = menu1TextBoxFunc 0 4 "+==Text==+";
 

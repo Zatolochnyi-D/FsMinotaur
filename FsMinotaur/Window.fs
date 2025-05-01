@@ -23,7 +23,7 @@ type Window(fps: int) =
     let mutable windowRect = rect TopLeft TopLeft None 0 0 (vectorFromStructTuple console.ConsoleSize)
     let sleepTime = fps |> double |> (/) 1000.0 |> System.Math.Floor |> int
     let mutable buffer = createEmptyBuffer windowRect.dimensions
-    let mutable currentPage = -1
+    let mutable currentPage = None
     let pages = storage<Page> ()
     let bindings = storage<Binding> ()
 
@@ -50,8 +50,10 @@ type Window(fps: int) =
                     let Y = fPos.y + y
                     if X > -1 && X < windowRect.dimensions.x && Y > -1 && Y < windowRect.dimensions.y then
                         buffer[X, Y] <- fragment.chars[x, y], fragment.backgroundColor, fragment.foregroundColor
-        let writeAllFragments = Storage.iter (fun (el: IGraphicalElement) -> writeFragmentToBuffer (el.GetFragment ()))
-        Storage.getElementSafe pages currentPage |> Option.iter (fun p -> writeAllFragments p.Elements)
+        currentPage
+        |> Option.map (fun i -> Storage.getElement pages i)
+        |> Option.map (fun p -> p.Elements)
+        |> Option.iter (Storage.iter <| fun (el: IGraphicalElement) -> writeFragmentToBuffer <| el.GetFragment() )
 
     member private _.DrawBuffer () =
         Array2D.iteri (fun x y (ch, bg: Color, fg: Color) -> console.SetColor (bg.get, fg.get); console.WriteChar (x, y, ch)) buffer
@@ -62,7 +64,9 @@ type Window(fps: int) =
 
         let key = console.ReadKey ()
         Storage.iter (fun x -> if x.key = key then x.func ()) bindings
-        Storage.getElementSafe pages currentPage |> Option.iter (fun p -> p.TriggerBinding key)
+        currentPage
+        |> Option.map (fun i -> Storage.getElement pages i)
+        |> Option.iter (fun p -> p.TriggerBinding key)
 
         this.WriteBuffer ()
         this.DrawBuffer ()
@@ -70,8 +74,11 @@ type Window(fps: int) =
         Thread.Sleep sleepTime
         this.MainLoop ()
 
-    member _.AddPage page = Storage.addElement pages page
+    member _.AddPage page = 
+        let index = Storage.addElement pages page
+        currentPage <- Some 0
+        index
 
-    member _.SetPageIndex index = currentPage <- index
+    member _.SetPageIndex index = currentPage <- Some index
 
     member _.AddBinding binding = Storage.addElement bindings binding
