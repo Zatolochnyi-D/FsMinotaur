@@ -1,5 +1,4 @@
 module Minotaur.GUI.Page
-open Minotaur
 open Interfaces
 open Minotaur.Utilities.Storage
 open Minotaur.Window.Bindings
@@ -22,13 +21,19 @@ type Page() as this =
     member private this.CycleUp () = 
         this.Cycle (fun x -> (x - 1 + selectableIndices.Count) % selectableIndices.Count)
 
-    member private _.Cycle cycleFunction =
-        Option.iter (fun i -> Storage.getElement elements selectableIndices[i] |> fun b -> (b :?> IButton).Deselect ()) currentSelected
+    member private this.Cycle cycleFunction =
+        this.RunOnButton (fun (b: IButton) -> b.Deselect())
         currentSelected <- Option.map cycleFunction currentSelected
-        Option.iter (fun i -> Storage.getElement elements selectableIndices[i] |> fun b -> (b :?> IButton).Select ()) currentSelected
+        this.RunOnButton (fun (b: IButton) -> b.Select())
 
-    member private _.Execute () = 
-        Option.iter (fun i -> Storage.getElement elements selectableIndices[i] |> fun b -> (b :?> IButton).Execute ()) currentSelected
+    member private this.Execute () = 
+        this.RunOnButton (fun (b: IButton) -> b.Execute())
+
+    member private _.RunOnButton funcToRun =
+        currentSelected
+        |> Option.map (fun i -> Storage.getElement elements selectableIndices[i])
+        |> Option.map (fun el -> el :?> IButton)
+        |> Option.iter funcToRun
 
     member _.AddStaticElement element = Storage.addElement elements element
 
