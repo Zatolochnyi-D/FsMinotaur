@@ -3,7 +3,7 @@ open Fragment
 open Rect
 
 type IGraphicalElement =
-    abstract member Fragment: Fragment with get
+    abstract member GetFragment: unit -> Fragment
     abstract member SetRect: Rect -> IGraphicalElement
 
 type IButton =

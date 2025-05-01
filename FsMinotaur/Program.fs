@@ -1,14 +1,11 @@
 ﻿module Minotaur.Main
 open System
-open Minotaur.GUI.Fragment
 open Colors
 open Minotaur.GUI.Rect
 open Minotaur.GUI.TextBox
 open Minotaur.Window.Window
 open Minotaur.Window.Bindings
 open Minotaur.GUI.Page
-open Minotaur.GUI.Interfaces
-open Minotaur.GUI
 open Minotaur.GUI.Button
 
 let defaultColor = white
@@ -18,39 +15,23 @@ let mainWindow = Window 30
 let mainPage = Page ()
 
 let menu1TextBoxFunc = textBox Center TopCenter Middle (Some mainWindow.Rect) defaultColor black
-let menu1Item1 =
-    let item = menu1TextBoxFunc 0 5 "┌────────────┐\n\
-                                     │  Settings  │\n\
-                                     └────────────┘"
-    item
-let menu1Item2 = menu1TextBoxFunc 0 10 "┌────────────┐\n\
+
+let text = menu1TextBoxFunc 0 4 "+==Text==+";
+
+let menu1Item1 = menu1TextBoxFunc 0 10 "┌────────────┐\n\
+                                        │  Settings  │\n\
+                                        └────────────┘"
+
+let menu1Item2 = menu1TextBoxFunc 0 14 "┌────────────┐\n\
                                         │    Exit    │\n\
                                         └────────────┘"
-mainPage.AddSelectableElement (Button (menu1Item1, (fun () -> Console.Beep())) :> IButton) |> ignore
-mainPage.AddSelectableElement (Button (menu1Item2, (fun () -> exit 0))) |> ignore
+mainPage.AddStaticElement text |> ignore
+Button (menu1Item1, (fun () -> Console.Beep())) |> mainPage.AddSelectableElement |> ignore
+Button (menu1Item2, (fun () -> exit 0)) |> mainPage.AddSelectableElement |> ignore
 mainWindow.AddPage mainPage |> ignore
 mainWindow.SetPageIndex 0
 
-// let itemCounter firstSelection =
-//     let minSelection, maxSelection = 0, 1
-//     let mutable currentSelection = firstSelection
-//     fun shift -> 
-//         currentSelection <- currentSelection + shift
-//         currentSelection <- min currentSelection maxSelection
-//         currentSelection <- max currentSelection minSelection
-//         currentSelection
-
-// let selector = itemCounter 0
-
-// let switch direction =
-//     let prevIndex = selector 0
-//     let nextIndex = selector direction
-    // mainWindow.SetFragment prevIndex (setFragmentForeground (mainWindow.GetFragment prevIndex) defaultColor)
-    // mainWindow.SetFragment nextIndex (setFragmentForeground (mainWindow.GetFragment nextIndex) selectionColor)
-
-// mainWindow.AddBinding (binding ConsoleKey.S (fun () -> switch 1)) |> ignore
-// mainWindow.AddBinding (binding ConsoleKey.W (fun () -> switch -1)) |> ignore
-mainWindow.AddBinding (binding ConsoleKey.Escape (fun () -> Environment.Exit 0)) |> ignore
+binding ConsoleKey.Escape (fun () -> exit 0) |> mainWindow.AddBinding |> ignore
 
 [<EntryPoint>]
 let main _ =

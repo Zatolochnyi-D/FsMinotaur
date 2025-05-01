@@ -49,10 +49,8 @@ type Window(fps: int) =
                     let Y = fPos.y + y
                     if X > -1 && X < windowRect.dimensions.x && Y > -1 && Y < windowRect.dimensions.y then
                         buffer[X, Y] <- fragment.chars[x, y], fragment.backgroundColor, fragment.foregroundColor
-        let writeAllFragments = Storage.iter (fun (el: IGraphicalElement) -> writeFragmentToBuffer el.Fragment)
-        let writeAllFragments2 = Storage.iter (fun (el: IButton) -> writeFragmentToBuffer el.Fragment)
-        Storage.getElementSafe pages currentPage |> Option.iter (fun p -> writeAllFragments p.StaticElements)
-        Storage.getElementSafe pages currentPage |> Option.iter (fun p -> writeAllFragments2 p.SelectableElements)
+        let writeAllFragments = Storage.iter (fun (el: IGraphicalElement) -> writeFragmentToBuffer (el.GetFragment ()))
+        Storage.getElementSafe pages currentPage |> Option.iter (fun p -> writeAllFragments p.Elements)
 
     member private _.DrawBuffer () =
         Array2D.iteri (fun x y (ch, bg: Color, fg: Color) -> console.SetColor (bg.get, fg.get); console.WriteChar (x, y, ch)) buffer

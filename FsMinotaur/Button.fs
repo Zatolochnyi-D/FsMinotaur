@@ -15,6 +15,7 @@ type Button(textBox, action) =
             textBox <- setTextForeground textBox selectionColor
         member this.Execute(): unit = 
             action ()
-        member val Fragment = textBox.fragment
-        member this.SetRect(arg1: Rect.Rect): IGraphicalElement = 
-            textBox
+        member _.GetFragment () = textBox.fragment
+        member this.SetRect rect = 
+            textBox <- (textBox :> IGraphicalElement).SetRect rect :?> TextBox
+            this :> IGraphicalElement
