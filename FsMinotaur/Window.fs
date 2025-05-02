@@ -9,7 +9,7 @@ open GUI.Fragment
 open GUI.Interfaces
 open Utilities.Vector
 open Utilities.Storage
-open Minotaur.GUI.Page
+open Page
 
 let defaultForeground = white
 let defaultBackground = black

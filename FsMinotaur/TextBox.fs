@@ -38,3 +38,5 @@ let textBox pivot anchor alignment parent foregroundColor backgroundColor x y (t
     { text = text; alignment = alignment; fragment = fragment }
 
 let setTextForeground textBox color = { textBox with fragment = setFragmentForeground textBox.fragment color }
+let textBoxWithParent parent textBox =
+    (textBox :> IGraphicalElement).SetRect parent :?> TextBox

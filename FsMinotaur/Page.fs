@@ -1,5 +1,5 @@
-module Minotaur.GUI.Page
-open Interfaces
+module Minotaur.Window.Page
+open Minotaur.GUI.Interfaces
 open Minotaur.Utilities.Storage
 open Minotaur.Window.Bindings
 open System

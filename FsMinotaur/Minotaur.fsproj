@@ -15,7 +15,7 @@
     <Compile Include="Button.fs" />
     <Compile Include="Page.fs" />
     <Compile Include="Window.fs" />
-    <Compile Include="Program.fs" />
+    <Compile Include="ExamplePage.fs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ConsoleFacade\ConsoleFacade.csproj" />
