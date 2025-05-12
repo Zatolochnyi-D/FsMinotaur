@@ -6,7 +6,6 @@ open Minotaur.GUI.TextBox
 open Minotaur.Window.Window
 open Minotaur.Window.Page
 open Minotaur.GUI.Button
-open Minotaur.GUI.Fragment
 open Minotaur.GUI.Interfaces
 
 let getExamplePage (window: Window) =
@@ -21,12 +20,12 @@ let getExamplePage (window: Window) =
                 }
     mainPage.AddStaticElement title |> ignore
     let menu1Item1 = menuTextBoxFunc 0 10 "┌────────────┐\n\
-                                            │  Settings  │\n\
-                                            └────────────┘"
+                                           │  Settings  │\n\
+                                           └────────────┘"
 
     let menu1Item2 = menuTextBoxFunc 0 14 "┌────────────┐\n\
-                                            │    Back    │\n\
-                                            └────────────┘"
+                                           │    Back    │\n\
+                                           └────────────┘"
     Button (menu1Item1, (fun () -> Console.Beep())) |> mainPage.AddSelectableElement |> ignore
     Button (menu1Item2, (fun () -> window.SetPageIndex 0)) |> mainPage.AddSelectableElement |> ignore
     mainPage
