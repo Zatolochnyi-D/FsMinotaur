@@ -19,9 +19,12 @@ module Storage =
         findEmptySlot 0 (Some element)
 
     let getElement storage index =
-        match storage.list[index] with
-        | Some v -> v
-        | None -> raise (NullValue "Trying read null value")
+        if index >= 0 && index < storage.list.Count then
+            match storage.list[index] with
+            | Some v -> v
+            | None -> raise (NullValue "Trying read null value")
+        else
+            raise (NullValue "Trying read null value")
 
     let setElement storage index element = storage.list[index] <- Some element
 
